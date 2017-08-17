@@ -1,0 +1,41 @@
+.currentLinkPagination a {
+    font-weight: bold;
+}
+
+.actions {
+    position: relative;
+    top: -2px;
+}
+
+.action-update, .action-delete {
+    display: inline-block;
+    min-width: 16px ;
+    height: 15px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.action-update span, .action-delete span {
+    display: none;
+}
+
+.action-update:before {
+    font-family: 'FontAwesome';
+    left: 0px;
+    position: absolute;
+    top: 2px;
+    content: '\f040';
+}
+
+.action-delete:before {
+    font-family: 'FontAwesome';
+    left:0px;
+    position: absolute;
+    top: 2px;
+    content: '\f1f8';
+}
+
+acms-switch {
+    position: relative;
+    top: 4px;
+}

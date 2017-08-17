@@ -1,0 +1,25 @@
+{
+  "name": "acms-table",
+  "version": "1.0.0",
+  "author": {
+    "name": "jerems02",
+    "email": "jeremie.stezycki@sylpheo.com"
+  },
+  "keywords": [
+    "angular"
+  ],
+  "license": "all rights reserved",
+  "main": "acms-table.umd.js",
+  "module": "acms-table.js",
+  "jsnext:main": "acms-table.js",
+  "typings": "acms-table.d.ts",
+  "peerDependencies": {
+    "@angular/core": "^4.0.0",
+    "rxjs": "^5.1.0",
+    "zone.js": "^0.8.4"
+  },
+  "dependencies": {
+    "acms-switch": "git+https://github.com/jerems02/acms-switch.git",
+    "ng2-translate": "^5.0.0"
+  }
+}

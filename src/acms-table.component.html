@@ -1,0 +1,70 @@
+<div *ngIf="config.global.search"  class="tableSearchBox" (keyup)="searchWithTerms($event, searchBox)" >
+    <span>{{ (config.global.isSearchLabelTranslatable) ? (config.global.searchLabel | translate) : (config.global.searchLabel) }}</span>
+    <input type="text" #searchBox placeholder="{{ (config.global.isPlaceHolderSearchTranslatable) ? (config.global.placeHolderSearch  | translate) : (config.global.placeHolderSearch) }}" />
+</div>
+
+<div *ngIf="config.global.group_actions && config.global.group_actions.length > 0" class="tableGroupActions">
+    <acms-switch [id]="main" (switchEvent)="selectDeselectAll($event)" id="main-switch"></acms-switch>
+    <select (change)="selectGlobalAction($event)">
+        <option disabled select>Group Action</option>
+        <option *ngFor="let action of config.global.group_actions">{{ action }}</option>
+    </select>
+</div>
+
+<table *ngIf="!isEmptyTable">
+
+    <thead *ngIf="config.global.showHeaders">
+    <tr>
+        <ng-template ngFor let-header [ngForOf]="headers" let-i="index">
+
+            <th *ngIf="showColumn(header.hideWithResponsiveView)">
+                {{ (header.is_translatable) ? (header.title  | translate) : (header.title) }}
+                <span class="sortArrow" *ngIf="header.is_sortable">
+            <span class="sortArrowUp" (click)="sort(i, 'ASC')">
+              &#x25B2;
+            </span>
+            <span class="sortArrowDown" (click)="sort(i, 'DESC')">
+              &#x25BC;
+            </span>
+          </span>
+            </th>
+
+        </ng-template>
+    </thead>
+
+    <tbody>
+    <tr *ngFor="let result of displayedResults">
+        <ng-template ngFor let-row [ngForOf]="result.items">
+
+            <td *ngIf="row.actions && row.actions.length > 0">
+                <ng-template ngFor let-action [ngForOf]="row.actions">
+              <span *ngIf="action === 'select'" class="actions action-select"><span>
+                <acms-switch [id]="result.id" (switchEvent)="updateSelectedRowsList($event)" class="item-switch"></acms-switch>
+              </span></span>
+                    <span *ngIf="action === 'update'" class="actions action-update" (click)="sendEvent('update', result.id)"><span>UPDATE</span></span>
+                    <span *ngIf="action === 'delete'" class="actions action-delete" (click)="sendEvent('delete', result.id)"><span>DELETE</span></span>
+                </ng-template>
+            </td>
+
+            <td *ngIf="!row.actions && showColumn(row.isResponsive)">
+                {{ (row.isTranslatable) ? (row.data | translate) : row.data }}
+            </td>
+        </ng-template>
+    </tr>
+    </tbody>
+
+    <caption *ngIf="config.global.legend">
+        {{ (config.global.isLegendTranslatable) ? (config.global.legend | translate) : (config.global.legend) }}
+    </caption>
+
+</table>
+
+<div class="tablePagination" *ngIf="config.global.pagination && !isEmptyTable">
+  <span *ngFor="let page of collectionPage" [ngClass]="(page.current)?'currentLinkPagination':''">
+    <a href="#" (click)="changePage(page.number)">{{ page.name }}</a>
+  </span>
+</div>
+
+<div id="acms-table-empty-message" *ngIf="isEmptyTable">
+    <div>{{ (config.global.isMessageIfEmptyTableTranslatable) ? (config.global.messageIfEmptyTable | translate) : (config.global.messageIfEmptyTable) }}</div>
+</div>
