@@ -33,21 +33,28 @@
     </thead>
 
     <tbody>
-    <tr *ngFor="let result of displayedResults">
+    <tr *ngFor="let result of displayedResults" (click)="(config.global.isEventOnRow) ? sendEvent($event,'onRow', result.id) : ''">
         <ng-template ngFor let-row [ngForOf]="result.items">
 
             <td *ngIf="row.actions && row.actions.length > 0">
                 <ng-template ngFor let-action [ngForOf]="row.actions">
               <span *ngIf="action === 'select'" class="actions action-select"><span>
-                <acms-switch [id]="result.id" (switchEvent)="updateSelectedRowsList($event)" class="item-switch"></acms-switch>
+                <acms-switch [id]="result.id" (switchEvent)="updateSelectedRowsList($event)" class="item-switch" (click)="stopPropagation($event)"></acms-switch>
               </span></span>
-                    <span *ngIf="action === 'update'" class="actions action-update" (click)="sendEvent('update', result.id)"><span>UPDATE</span></span>
-                    <span *ngIf="action === 'delete'" class="actions action-delete" (click)="sendEvent('delete', result.id)"><span>DELETE</span></span>
+                    <span *ngIf="action === 'update'" class="actions action-update" (click)="sendEvent($event, 'update', result.id)"><span>UPDATE</span></span>
+                    <span *ngIf="action === 'delete'" class="actions action-delete" (click)="sendEvent($event, 'delete', result.id)"><span>DELETE</span></span>
                 </ng-template>
             </td>
 
-            <td *ngIf="!row.actions && showColumn(row.isResponsive)">
+            <td *ngIf="!row.actions && showColumn(row.isResponsive) && !row.isHtml && !row.img">
                 {{ (row.isTranslatable) ? (row.data | translate) : row.data }}
+            </td>
+
+            <td *ngIf="!row.actions && showColumn(row.isResponsive) && row.isHtml && !row.img" [innerHTML]="row.data">
+            </td>
+
+            <td *ngIf="!row.actions && showColumn(row.isResponsive) && !row.isHtml && row.img">
+                <img [src]="row.data" [attr.height]="row.img.height" [attr.width]="row.img.width" />
             </td>
         </ng-template>
     </tr>

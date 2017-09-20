@@ -1,8 +1,14 @@
-import {Component, OnInit, OnChanges, ChangeDetectorRef, Input, Output, EventEmitter} from '@angular/core';
+import {
+  Component, OnInit, OnChanges, ChangeDetectorRef, Input, Output, EventEmitter,
+  SecurityContext
+} from '@angular/core';
+import {DomSanitizer} from "@angular/platform-browser";
 
 export class Item {
   data: string;
   isResponsive = false;
+  isHtml = false;
+  img = null;
   isTranslatable = false;
   actions = [];
 
@@ -19,7 +25,7 @@ export class Item {
 
 export class AcmsTableComponent implements OnInit, OnChanges {
 
-  constructor(private _ref: ChangeDetectorRef) {
+  constructor(private _ref: ChangeDetectorRef, private _sanitizer: DomSanitizer) {
   }
 
   @Input() config: any;
@@ -65,6 +71,26 @@ export class AcmsTableComponent implements OnInit, OnChanges {
     this.displayedResults = [];
   }
 
+  /**
+   * Find the value of an element with is target (ex: object.property1...)
+   * It find through the element sent
+   * Returns false if there is no match
+   * @param target
+   * @param el
+   * @returns {null}
+   */
+  findTargetThroughObject(target, el) {
+    let test = target.split('.').reduce(function (object, property) {
+      if(object[property]) {
+        return object[property];
+      } else {
+        return false;
+      }
+    }, el);
+    return test;
+  }
+
+
   prepareTable() {
 
     this.reinit();
@@ -77,6 +103,8 @@ export class AcmsTableComponent implements OnInit, OnChanges {
         src: el.target,
         actions: el.actions,
         isResponsive: el.hideWithResponsiveView,
+        isHtml: el.isHtml,
+        img: el.img,
         messageIfEmpty: el.messageIfEmpty,
         isMessageIfEmptyTranslatable: el.isMessageIfEmptyTranslatable
       }
@@ -88,6 +116,7 @@ export class AcmsTableComponent implements OnInit, OnChanges {
       return el;
     });
 
+
     /**
      * we loop on collection to extract data on json, we use the targets array installed before
      * to know for each item the target and if the element is responsive
@@ -97,29 +126,28 @@ export class AcmsTableComponent implements OnInit, OnChanges {
       var row: any = {};
       row.items = [];
 
-      //we set a index if there is no id key defined in the config file for this row
-      row.id = (el[this.config.global.target_id]) ? el[this.config.global.target_id] : index;
+      row.id = this.findTargetThroughObject(this.config.global.target_id, el);
+      if(!row.id) row.id = index;
 
       this.targets.forEach( target => {
 
         let translatable = false;
         //find object
         if (target.src !== null) { // if it is not a actions item
-          var objectFound = target.src.split('.').reduce(function (object, property) {
-            if(!object[property] || object[property] === ' ') {
-              object[property] = target.messageIfEmpty;
-              if(target.isMessageIfEmptyTranslatable) translatable = true;
-            }
-            return object[property];
-          }, el);
-          if (!objectFound) { // if we don't find
-            return;
+          var objectFound = this.findTargetThroughObject(target.src, el);
+          if(!objectFound) {
+            objectFound = target.messageIfEmpty;
+            if(target.isMessageIfEmptyTranslatable) translatable = true;
+            if(target.isHtml) objectFound = this._sanitizer.sanitize(SecurityContext.HTML, objectFound);
+            if(target.img) objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
           }
         };
 
         let item: Item = new Item((objectFound)?objectFound:null);
         item.actions = target.actions;
         item.isResponsive = target.isResponsive;
+        item.isHtml = target.isHtml;
+        item.img = target.img;
         item.isTranslatable = translatable;
         row.items.push(item);
 
@@ -305,7 +333,7 @@ export class AcmsTableComponent implements OnInit, OnChanges {
 
   selectGlobalAction(evt) {
     let type = evt.target.value;
-    this.sendEvent(type + 'All', this.selectedRowsList);
+    this.sendEvent(evt, type + 'All', this.selectedRowsList);
     // reset select option
     let copy = this.config.global.group_actions;
     this.config.global.group_actions = null;
@@ -314,12 +342,13 @@ export class AcmsTableComponent implements OnInit, OnChanges {
     this._ref.detectChanges();
   }
 
-  sendEvent(type, rowId) {
+  sendEvent(evt, type, rowId) {
+    evt.stopPropagation();
     this.rowSelected.emit({type: type, id: rowId});
   }
 
   updateSelectedRowsList(evt) {
-    this.resetMainSwitch();
+    if(this.config.global.group_actions) this.resetMainSwitch();
     let idRow = evt.id;
     let state = evt.state;
     let pos = this.selectedRowsList.indexOf(idRow);
@@ -352,6 +381,10 @@ export class AcmsTableComponent implements OnInit, OnChanges {
     [].forEach.call(all, function(el) {
       el.querySelector('input').checked = state;
     });
+  }
+
+  stopPropagation(evt) {
+    evt.stopPropagation();
   }
 
 
