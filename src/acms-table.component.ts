@@ -11,6 +11,8 @@ export class Item {
   img = null;
   isTranslatable = false;
   actions = [];
+  url = null;
+  isSvg = null;
 
   constructor(data) {
     this.data = data;
@@ -105,6 +107,8 @@ export class AcmsTableComponent implements OnInit, OnChanges {
         isResponsive: el.hideWithResponsiveView,
         isHtml: el.isHtml,
         img: el.img,
+        url: el.url,
+        isSvg: el.isSvg,
         messageIfEmpty: el.messageIfEmpty,
         isMessageIfEmptyTranslatable: el.isMessageIfEmptyTranslatable
       }
@@ -139,7 +143,11 @@ export class AcmsTableComponent implements OnInit, OnChanges {
             objectFound = target.messageIfEmpty;
             if(target.isMessageIfEmptyTranslatable) translatable = true;
             if(target.isHtml) objectFound = this._sanitizer.sanitize(SecurityContext.HTML, objectFound);
+            if(target.isHtml) objectFound = this._sanitizer.sanitize(SecurityContext.HTML, objectFound);
             if(target.img) objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
+            if(target.url) objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
+            //if(target.isSvg) objectFound = this._sanitizer.bypassSecurityTrustHtml(objectFound);
+            if(target.isSvg) objectFound = this._sanitizer.bypassSecurityTrustHtml(objectFound);
           }
         };
 
@@ -148,6 +156,8 @@ export class AcmsTableComponent implements OnInit, OnChanges {
         item.isResponsive = target.isResponsive;
         item.isHtml = target.isHtml;
         item.img = target.img;
+        item.url = target.url;
+        item.isSvg = target.isSvg;
         item.isTranslatable = translatable;
         row.items.push(item);
 

@@ -46,16 +46,33 @@
                 </ng-template>
             </td>
 
-            <td *ngIf="!row.actions && showColumn(row.isResponsive) && !row.isHtml && !row.img">
-                {{ (row.isTranslatable) ? (row.data | translate) : row.data }}
-            </td>
+            <ng-container *ngIf="!row.actions && showColumn(row.isResponsive)">
 
-            <td *ngIf="!row.actions && showColumn(row.isResponsive) && row.isHtml && !row.img" [innerHTML]="row.data">
-            </td>
+                <td *ngIf="row.isHtml" [innerHTML]="'test1'+ row.data">
+                </td>
 
-            <td *ngIf="!row.actions && showColumn(row.isResponsive) && !row.isHtml && row.img">
-                <img [src]="row.data" [attr.height]="row.img.height" [attr.width]="row.img.width" />
-            </td>
+                <ng-container *ngIf="!row.isHtml">
+
+                    <td *ngIf="!row.img && !row.url && !row.isSvg">
+                        {{ (row.isTranslatable) ? (row.data | translate) : row.data }}
+                    </td>
+
+                    <td *ngIf="row.img && !row.url && !row.isSvg">
+                        <img [src]="row.data" [attr.height]="row.img.height" [attr.width]="row.img.width" />
+                    </td>
+
+                    <td *ngIf="!row.img && row.url && !row.isSvg">
+                        <a (click)="stopPropagation($event)" [attr.href]="(row.url.prefix) ? (row.url.prefix+row.data) : row.data" [attr.title]="row.url.title" [attr.target]="row.url.target">{{ (row.url.content) ? ( ( row.url.isContentTranslatable ) ? (row.url.content | translate) : row.url.content ) : ( (row.url.prefix) ? (row.url.prefix+row.data) : row.data ) }}</a>
+                    </td>
+
+                    <td *ngIf="!row.img && !row.url && row.isSvg" [innerHTML]="row.data">
+                    </td>
+
+                </ng-container>
+
+
+            </ng-container>
+
         </ng-template>
     </tr>
     </tbody>
