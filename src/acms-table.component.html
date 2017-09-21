@@ -46,32 +46,28 @@
                 </ng-template>
             </td>
 
-            <ng-container *ngIf="!row.actions && showColumn(row.isResponsive)">
 
-                <td *ngIf="row.isHtml" [innerHTML]="'test1'+ row.data">
+            <container-element [ngSwitch]="row.type" *ngIf="!row.actions && showColumn(row.isResponsive)">
+
+                <td *ngSwitchCase="'html'" [innerHTML]="row.data">
                 </td>
 
-                <ng-container *ngIf="!row.isHtml">
+                <td *ngSwitchCase="'img'" [innerHTML]="row.img">
+                    <img [src]="row.data" [attr.height]="row.img.height" [attr.width]="row.img.width" />
+                </td>
 
-                    <td *ngIf="!row.img && !row.url && !row.isSvg">
-                        {{ (row.isTranslatable) ? (row.data | translate) : row.data }}
-                    </td>
+                <td *ngSwitchCase="'svg'" [innerHTML]="row.data">
+                </td>
 
-                    <td *ngIf="row.img && !row.url && !row.isSvg">
-                        <img [src]="row.data" [attr.height]="row.img.height" [attr.width]="row.img.width" />
-                    </td>
+                <td *ngSwitchCase="'url'" [innerHTML]="row.data">
+                    <a (click)="stopPropagation($event)" [attr.href]="(row.url.prefix) ? (row.url.prefix+row.data) : row.data" [attr.title]="row.url.title" [attr.target]="row.url.target">{{ (row.url.content) ? ( ( row.url.isContentTranslatable ) ? (row.url.content | translate) : row.url.content ) : ( (row.url.prefix) ? (row.url.prefix+row.data) : row.data ) }}</a>
+                </td>
 
-                    <td *ngIf="!row.img && row.url && !row.isSvg">
-                        <a (click)="stopPropagation($event)" [attr.href]="(row.url.prefix) ? (row.url.prefix+row.data) : row.data" [attr.title]="row.url.title" [attr.target]="row.url.target">{{ (row.url.content) ? ( ( row.url.isContentTranslatable ) ? (row.url.content | translate) : row.url.content ) : ( (row.url.prefix) ? (row.url.prefix+row.data) : row.data ) }}</a>
-                    </td>
-
-                    <td *ngIf="!row.img && !row.url && row.isSvg" [innerHTML]="row.data">
-                    </td>
-
-                </ng-container>
-
-
-            </ng-container>
+                <td *ngSwitchDefault>
+                    {{ (row.isTranslatable) ? (row.data | translate) : row.data }}
+                </td>
+            
+            </container-element>
 
         </ng-template>
     </tr>

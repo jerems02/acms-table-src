@@ -7,12 +7,17 @@ import {DomSanitizer} from "@angular/platform-browser";
 export class Item {
   data: string;
   isResponsive = false;
-  isHtml = false;
-  img = null;
+
   isTranslatable = false;
   actions = [];
+
+  /*isHtml = false;
+  img = null;
   url = null;
-  isSvg = null;
+  isSvg = null;*/
+
+  type = 'text'; // svg, img, url, html, or text
+  config = null;
 
   constructor(data) {
     this.data = data;
@@ -105,10 +110,8 @@ export class AcmsTableComponent implements OnInit, OnChanges {
         src: el.target,
         actions: el.actions,
         isResponsive: el.hideWithResponsiveView,
-        isHtml: el.isHtml,
-        img: el.img,
-        url: el.url,
-        isSvg: el.isSvg,
+        type: el.type,
+        config: el.config,
         messageIfEmpty: el.messageIfEmpty,
         isMessageIfEmptyTranslatable: el.isMessageIfEmptyTranslatable
       }
@@ -142,22 +145,18 @@ export class AcmsTableComponent implements OnInit, OnChanges {
           if(!objectFound) {
             objectFound = target.messageIfEmpty;
             if(target.isMessageIfEmptyTranslatable) translatable = true;
-            if(target.isHtml) objectFound = this._sanitizer.sanitize(SecurityContext.HTML, objectFound);
-            if(target.isHtml) objectFound = this._sanitizer.sanitize(SecurityContext.HTML, objectFound);
-            if(target.img) objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
-            if(target.url) objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
-            //if(target.isSvg) objectFound = this._sanitizer.bypassSecurityTrustHtml(objectFound);
-            if(target.isSvg) objectFound = this._sanitizer.bypassSecurityTrustHtml(objectFound);
+            if(target.type === 'html') objectFound = this._sanitizer.sanitize(SecurityContext.HTML, objectFound);
+            if(target.type === 'img') objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
+            if(target.type === 'url') objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
+            if(target.type === 'svg') objectFound = this._sanitizer.bypassSecurityTrustHtml(objectFound);
           }
         };
 
         let item: Item = new Item((objectFound)?objectFound:null);
         item.actions = target.actions;
         item.isResponsive = target.isResponsive;
-        item.isHtml = target.isHtml;
-        item.img = target.img;
-        item.url = target.url;
-        item.isSvg = target.isSvg;
+        item.type = target.type;
+        item.config = target.config;
         item.isTranslatable = translatable;
         row.items.push(item);
 
