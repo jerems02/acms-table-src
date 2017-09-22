@@ -47,27 +47,27 @@
             </td>
 
 
-            <container-element [ngSwitch]="row.type" *ngIf="!row.actions && showColumn(row.isResponsive)">
+            <ng-container [ngSwitch]="row.type" *ngIf="!row.actions && showColumn(row.isResponsive)">
 
                 <td *ngSwitchCase="'html'" [innerHTML]="row.data">
                 </td>
 
-                <td *ngSwitchCase="'img'" [innerHTML]="row.img">
-                    <img [src]="row.data" [attr.height]="row.img.height" [attr.width]="row.img.width" />
+                <td *ngSwitchCase="'img'">
+                    <img [src]="row.data" [attr.height]="row.config.height" [attr.width]="row.config.width" />
                 </td>
 
                 <td *ngSwitchCase="'svg'" [innerHTML]="row.data">
                 </td>
 
-                <td *ngSwitchCase="'url'" [innerHTML]="row.data">
-                    <a (click)="stopPropagation($event)" [attr.href]="(row.url.prefix) ? (row.url.prefix+row.data) : row.data" [attr.title]="row.url.title" [attr.target]="row.url.target">{{ (row.url.content) ? ( ( row.url.isContentTranslatable ) ? (row.url.content | translate) : row.url.content ) : ( (row.url.prefix) ? (row.url.prefix+row.data) : row.data ) }}</a>
+                <td *ngSwitchCase="'url'">
+                    <a (click)="stopPropagation($event)" [attr.href]="(row.config.prefix) ? (row.config.prefix+row.data) : row.data" [attr.title]="row.config.title" [attr.target]="row.config.target">{{ (row.config.content) ? ( ( row.config.isContentTranslatable ) ? (row.config.content | translate) : row.config.content ) : ( (row.config.prefix) ? (row.config.prefix+row.data) : row.data ) }}</a>
                 </td>
 
                 <td *ngSwitchDefault>
                     {{ (row.isTranslatable) ? (row.data | translate) : row.data }}
                 </td>
-            
-            </container-element>
+
+            </ng-container>
 
         </ng-template>
     </tr>
