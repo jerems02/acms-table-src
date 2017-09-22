@@ -56,7 +56,10 @@
                     <img [src]="row.data" [attr.height]="row.config.height" [attr.width]="row.config.width" />
                 </td>
 
-                <td *ngSwitchCase="'svg'" [innerHTML]="row.data">
+                <td *ngSwitchCase="'svg'">
+                    <span [innerHTML]="row.data">
+
+                    </span>
                 </td>
 
                 <td *ngSwitchCase="'url'">
