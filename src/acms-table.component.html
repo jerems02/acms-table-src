@@ -49,24 +49,38 @@
 
             <ng-container [ngSwitch]="row.type" *ngIf="!row.actions && showColumn(row.isResponsive)">
 
-                <td *ngSwitchCase="'html'" [innerHTML]="row.data">
+                <td *ngSwitchCase="'html'" [innerHTML]="row.data" [ngClass]="row.classRow">
                 </td>
 
-                <td *ngSwitchCase="'img'">
-                    <img [src]="row.data" [attr.height]="row.config.height" [attr.width]="row.config.width" />
+                <td *ngSwitchCase="'img'" [ngClass]="row.classRow">
+
+                    <img *ngIf="!row.config.method && !row.config.url" [src]="row.data" [attr.height]="row.config.height" [attr.width]="row.config.width" />
+
+                    <a class="imgClick" *ngIf="row.config.method && !row.config.url" (click)="genericClickMethod($event, row.config.method, row.config.params, row.config.context)" ><img [src]="row.data" [attr.height]="row.config.height" [attr.width]="row.config.width" /></a>
+
+                    <a class="imgURL" *ngIf="!row.config.method && row.config.url" [attr.href]="row.config.url" [attr.target]="row.config.target"><img [src]="row.data" [attr.height]="row.config.height" [attr.width]="row.config.width" /></a>
+
                 </td>
 
-                <td *ngSwitchCase="'svg'">
-                    <span [innerHTML]="row.data">
+                <td *ngSwitchCase="'svg'" [ngClass]="row.classRow">
 
-                    </span>
+                    <span *ngIf="!row.config.method && !row.config.url" [innerHTML]="row.data"></span>
+
+                    <a class="svgClick" *ngIf="row.config.method && !row.config.url" (click)="genericClickMethod($event, row.config.method, row.config.params, row.config.context)" ><span [innerHTML]="row.data"></span></a>
+
+                    <a class="svgURL" *ngIf="!row.config.method && row.config.url" [attr.href]="row.config.url" [attr.target]="row.config.target"><span [innerHTML]="row.data"></span></a>
+
                 </td>
 
-                <td *ngSwitchCase="'url'">
+                <td *ngSwitchCase="'url'" [ngClass]="row.classRow">
                     <a (click)="stopPropagation($event)" [attr.href]="(row.config.prefix) ? (row.config.prefix+row.data) : row.data" [attr.title]="row.config.title" [attr.target]="row.config.target">{{ (row.config.content) ? ( ( row.config.isContentTranslatable ) ? (row.config.content | translate) : row.config.content ) : ( (row.config.prefix) ? (row.config.prefix+row.data) : row.data ) }}</a>
                 </td>
 
-                <td *ngSwitchDefault>
+                <td *ngSwitchCase="'function'" [ngClass]="row.classRow">
+                    <a class="functionClick" (click)="genericClickMethod($event, row.config.method, row.config.params, row.config.context)" >{{ row.data }}</a>
+                </td>
+
+                <td *ngSwitchDefault [ngClass]="row.classRow">
                     {{ (row.isTranslatable) ? (row.data | translate) : row.data }}
                 </td>
 

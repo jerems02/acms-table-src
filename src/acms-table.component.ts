@@ -11,13 +11,9 @@ export class Item {
   isTranslatable = false;
   actions = [];
 
-  /*isHtml = false;
-  img = null;
-  url = null;
-  isSvg = null;*/
-
-  type = 'text'; // svg, img, url, html, or text
+  type = 'text'; // svg, img, url, html, function or text
   config = null;
+  classRow: string = null;
 
   constructor(data) {
     this.data = data;
@@ -108,10 +104,13 @@ export class AcmsTableComponent implements OnInit, OnChanges {
     this.headers = this.config.columns.map( (el, index) => {
       let target = {
         src: el.target,
+        concat: el.concat,
+        concatSeparator: ((el.concatSeparator) ? el.concatSeparator : ' '),
         actions: el.actions,
         isResponsive: el.hideWithResponsiveView,
         type: el.type,
         config: el.config,
+        classRow: el.classRow,
         messageIfEmpty: el.messageIfEmpty,
         isMessageIfEmptyTranslatable: el.isMessageIfEmptyTranslatable
       }
@@ -139,9 +138,10 @@ export class AcmsTableComponent implements OnInit, OnChanges {
       this.targets.forEach( target => {
 
         let translatable = false;
+        let objectFound;
         //find object
-        if (target.src !== null) { // if it is not a actions item
-          var objectFound = this.findTargetThroughObject(target.src, el);
+        if (target.src !== null && !target.concat) { // if it is not a actions item
+          objectFound = this.findTargetThroughObject(target.src, el);
           if(!objectFound) {
             objectFound = target.messageIfEmpty;
             if(target.isMessageIfEmptyTranslatable) translatable = true;
@@ -152,11 +152,21 @@ export class AcmsTableComponent implements OnInit, OnChanges {
           }
         };
 
+        if(!target.src && target.concat) {
+          let tempValues = [];
+          target.concat.forEach( (concatItem) => {
+            let temp = this.findTargetThroughObject(concatItem, el);
+            if(temp) tempValues.push(temp);
+          });
+          objectFound = tempValues.join(target.concatSeparator);
+        }
+
         let item: Item = new Item((objectFound)?objectFound:null);
         item.actions = target.actions;
         item.isResponsive = target.isResponsive;
         item.type = target.type;
         item.config = target.config;
+        item.classRow = target.classRow;
         item.isTranslatable = translatable;
         row.items.push(item);
 
@@ -392,8 +402,33 @@ export class AcmsTableComponent implements OnInit, OnChanges {
     });
   }
 
+  /**
+   * Stop the propagation of event
+   * @param evt
+   */
   stopPropagation(evt) {
     evt.stopPropagation();
+  }
+
+  /**
+   * Method called on svg/img by click event
+   * @param evt
+   * @param method
+   * @param params
+   */
+  genericClickMethod(evt, method, params, context) {
+
+    this.stopPropagation(evt);
+    if(!params) {
+      params = [];
+    }
+    var newParams = params.slice();
+    newParams.push(evt);
+    if(context) {
+      method.call(context, newParams);
+    } else {
+      method(newParams);
+    }
   }
 
 
