@@ -3,34 +3,8 @@ import {
   SecurityContext
 } from '@angular/core';
 import {DomSanitizer} from "@angular/platform-browser";
-
-export class Item {
-  data: string;
-  isResponsive = false;
-
-  isTranslatable = false;
-  actions = [];
-
-  type = 'text'; // svg, img, url, html, function or text
-  config = null;
-  classRow: string = null;
-  multirows: any[] = [];
-
-  constructor(data) {
-    this.data = data;
-  }
-}
-
-export class Row {
-  data: string;
-  isTranslatable = false;
-  type = 'text'; // svg, img, url, html, function or text
-  config = null;
-
-  constructor(data) {
-    this.data = data;
-  }
-}
+import {Item} from "./item.model";
+import {Row} from "./row.model";
 
 @Component({
   selector: 'acms-table',
@@ -185,31 +159,6 @@ export class AcmsTableComponent implements OnInit, OnChanges {
       if(!row.id) row.id = index;
 
       this.targets.forEach( target => {
-
-        /*let translatable = false;
-        let objectFound;
-
-        //find object
-        if (target.src !== null && !target.concat) { // if it is not a actions item
-          objectFound = this.findTargetThroughObject(target.src, el);
-          if(!objectFound) {
-            objectFound = target.messageIfEmpty;
-            if(target.isMessageIfEmptyTranslatable) translatable = true;
-            if(target.type === 'html') objectFound = this._sanitizer.sanitize(SecurityContext.HTML, objectFound);
-            if(target.type === 'img') objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
-            if(target.type === 'url') objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
-            if(target.type === 'svg') objectFound = this._sanitizer.bypassSecurityTrustHtml(objectFound);
-          }
-        };
-
-        if(!target.src && target.concat) {
-          let tempValues = [];
-          target.concat.forEach( (concatItem) => {
-            let temp = this.findTargetThroughObject(concatItem, el);
-            if(temp) tempValues.push(temp);
-          });
-          objectFound = tempValues.join(target.concatSeparator);
-        }*/
 
         let mainRow = this.prepareOneRow(target, el);
 
@@ -485,28 +434,5 @@ export class AcmsTableComponent implements OnInit, OnChanges {
   stopPropagation(evt) {
     evt.stopPropagation();
   }
-
-  /**
-   * Method called on svg/img by click event
-   * @param evt
-   * @param method
-   * @param params
-   */
-  genericClickMethod(evt, method, params, context) {
-
-    this.stopPropagation(evt);
-    if(!params) {
-      params = [];
-    }
-    var newParams = params.slice();
-    newParams.push(evt);
-    if(context) {
-      method.call(context, newParams);
-    } else {
-      method(newParams);
-    }
-  }
-
-
 
 }

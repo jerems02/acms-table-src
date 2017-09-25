@@ -49,7 +49,9 @@
 
             <td *ngIf="!row.actions && showColumn(row.isResponsive)" [ngClass]="row.classRow">
 
-                <ng-container [ngSwitch]="row.type" >
+                <acms-data [row]="row"></acms-data>
+
+                <!--<ng-container [ngSwitch]="row.type" >
 
                     <div *ngSwitchCase="'html'" [innerHTML]="row.data">
                     </div>
@@ -86,13 +88,13 @@
                         {{ (row.isTranslatable) ? (row.data | translate) : row.data }}
                     </div>
 
-                </ng-container>
+                </ng-container>-->
 
 
                 <ng-template ngFor let-subrow [ngForOf]="row.multirows">
 
-
-                    <!-- faire un composant -->
+                    <acms-data [row]="subrow"></acms-data>
+                    <!--
                     <ng-container [ngSwitch]="subrow.type" >
 
                         <div *ngSwitchCase="'html'" [innerHTML]="subrow.data">
@@ -131,7 +133,7 @@
                         </div>
 
                     </ng-container>
-                    <!-- code dupliqué -->
+                     -->
 
                 </ng-template>
 
