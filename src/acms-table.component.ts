@@ -14,6 +14,18 @@ export class Item {
   type = 'text'; // svg, img, url, html, function or text
   config = null;
   classRow: string = null;
+  multirows: any[] = [];
+
+  constructor(data) {
+    this.data = data;
+  }
+}
+
+export class Row {
+  data: string;
+  isTranslatable = false;
+  type = 'text'; // svg, img, url, html, function or text
+  config = null;
 
   constructor(data) {
     this.data = data;
@@ -93,6 +105,41 @@ export class AcmsTableComponent implements OnInit, OnChanges {
     return test;
   }
 
+  /**
+   * Find the value for prepare one row
+   */
+  prepareOneRow(target, el) {
+    let translatable = false;
+    let objectFound;
+
+    //find object
+    if (target.target !== null && !target.concat) { // if it is not a actions item
+      objectFound = this.findTargetThroughObject(target.target, el);
+      if(!objectFound) {
+        objectFound = target.messageIfEmpty;
+        if(target.isMessageIfEmptyTranslatable) translatable = true;
+        if(target.type === 'html') objectFound = this._sanitizer.sanitize(SecurityContext.HTML, objectFound);
+        if(target.type === 'img') objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
+        if(target.type === 'url') objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
+        if(target.type === 'svg') objectFound = this._sanitizer.bypassSecurityTrustHtml(objectFound);
+      }
+    };
+
+    if(!target.target && target.concat) {
+      let tempValues = [];
+      target.concat.forEach( (concatItem) => {
+        let temp = this.findTargetThroughObject(concatItem, el);
+        if(temp) tempValues.push(temp);
+      });
+      objectFound = tempValues.join(target.concatSeparator);
+    }
+
+    return {
+      'translatable': translatable,
+      'objectFound': objectFound
+    }
+  }
+
 
   prepareTable() {
 
@@ -103,7 +150,7 @@ export class AcmsTableComponent implements OnInit, OnChanges {
      */
     this.headers = this.config.columns.map( (el, index) => {
       let target = {
-        src: el.target,
+        target: el.target,
         concat: el.concat,
         concatSeparator: ((el.concatSeparator) ? el.concatSeparator : ' '),
         actions: el.actions,
@@ -111,6 +158,7 @@ export class AcmsTableComponent implements OnInit, OnChanges {
         type: el.type,
         config: el.config,
         classRow: el.classRow,
+        row: el.row,
         messageIfEmpty: el.messageIfEmpty,
         isMessageIfEmptyTranslatable: el.isMessageIfEmptyTranslatable
       }
@@ -121,6 +169,7 @@ export class AcmsTableComponent implements OnInit, OnChanges {
       }
       return el;
     });
+
 
 
     /**
@@ -137,8 +186,9 @@ export class AcmsTableComponent implements OnInit, OnChanges {
 
       this.targets.forEach( target => {
 
-        let translatable = false;
+        /*let translatable = false;
         let objectFound;
+
         //find object
         if (target.src !== null && !target.concat) { // if it is not a actions item
           objectFound = this.findTargetThroughObject(target.src, el);
@@ -159,15 +209,41 @@ export class AcmsTableComponent implements OnInit, OnChanges {
             if(temp) tempValues.push(temp);
           });
           objectFound = tempValues.join(target.concatSeparator);
+        }*/
+
+        let mainRow = this.prepareOneRow(target, el);
+
+        // multirows
+        let multirows = [];
+        let that = this;
+        let recursiveRows = function (newTarget) {
+
+          let tempRow = that.prepareOneRow(newTarget, el);
+          if(!tempRow) return;
+          let row: Row = new Row(tempRow.objectFound);
+          row.isTranslatable = tempRow.translatable;
+          row.type = newTarget.type;
+          row.config = newTarget.config;
+          multirows.push(row);
+          // recursive
+          if(newTarget.row) recursiveRows(newTarget.row);
+
         }
 
-        let item: Item = new Item((objectFound)?objectFound:null);
+        if(target.row) {
+          recursiveRows(target.row);
+        }
+
+
+
+        let item: Item = new Item((mainRow.objectFound)?mainRow.objectFound:null);
         item.actions = target.actions;
         item.isResponsive = target.isResponsive;
         item.type = target.type;
         item.config = target.config;
         item.classRow = target.classRow;
-        item.isTranslatable = translatable;
+        item.isTranslatable = mainRow.translatable;
+        item.multirows = multirows;
         row.items.push(item);
 
       });

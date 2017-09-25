@@ -35,7 +35,14 @@
     content: '\f1f8';
 }*/
 
+.multi-rows {
+    display: flex;
+    flex-direction: column;
+}
+
 acms-switch {
     position: relative;
     top: 4px;
 }
+
+
