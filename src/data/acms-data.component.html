@@ -1,38 +1,39 @@
-<ng-container [ngSwitch]="row.type" >
+<ng-container [ngSwitch]="cell.type" >
 
-    <div *ngSwitchCase="'html'" [innerHTML]="row.data">
+    <div *ngSwitchCase="'html'" [innerHTML]="cell.data">
     </div>
 
     <div *ngSwitchCase="'img'">
 
-        <img *ngIf="!row.config.method && !row.config.url" [src]="row.data" [attr.height]="row.config.height" [attr.width]="row.config.width" />
+        <img *ngIf="!cell.config.method && !cell.config.url" [src]="cell.data" [attr.height]="cell.config.height" [attr.width]="cell.config.width" />
 
-        <a class="imgClick" *ngIf="row.config.method && !row.config.url" (click)="genericClickMethod($event, row.config.method, row.config.params, row.config.context)" ><img [src]="row.data" [attr.height]="row.config.height" [attr.width]="row.config.width" /></a>
+        <a class="imgClick" *ngIf="cell.config.method && !cell.config.url" (click)="genericClickMethod($event, cell.config.method, cell.config.params, cell.config.context, cell.contextRow)" ><img [src]="cell.data" [attr.height]="cell.config.height" [attr.width]="cell.config.width" /></a>
 
-        <a class="imgURL" *ngIf="!row.config.method && row.config.url" [attr.href]="row.config.url" [attr.target]="row.config.target"><img [src]="row.data" [attr.height]="row.config.height" [attr.width]="row.config.width" /></a>
+        <a class="imgURL" *ngIf="!cell.config.method && cell.config.url" [attr.href]="cell.config.url" [attr.target]="cell.config.target"><img [src]="cell.data" [attr.height]="cell.config.height" [attr.width]="cell.config.width" /></a>
 
     </div>
 
     <div *ngSwitchCase="'svg'">
 
-        <span *ngIf="!row.config.method && !row.config.url" [innerHTML]="row.data"></span>
+        <span *ngIf="!cell.config.method && !cell.config.url" [innerHTML]="cell.data"></span>
 
-        <a class="svgClick" *ngIf="row.config.method && !row.config.url" (click)="genericClickMethod($event, row.config.method, row.config.params, row.config.context)" ><span [innerHTML]="row.data"></span></a>
+        <a class="svgClick" *ngIf="cell.config.method && !cell.config.url" (click)="genericClickMethod($event, cell.config.method, cell.config.params, cell.config.context, cell.contextRow)" ><span [innerHTML]="cell.data"></span></a>
 
-        <a class="svgURL" *ngIf="!row.config.method && row.config.url" [attr.href]="row.config.url" [attr.target]="row.config.target"><span [innerHTML]="row.data"></span></a>
+        <a class="svgURL" *ngIf="!cell.config.method && cell.config.url" [attr.href]="cell.config.url" [attr.target]="cell.config.target"><span [innerHTML]="cell.data"></span></a>
 
     </div>
 
     <div *ngSwitchCase="'url'">
-        <a (click)="stopPropagation($event)" [attr.href]="(row.config.prefix) ? (row.config.prefix+row.data) : row.data" [attr.title]="row.config.title" [attr.target]="row.config.target">{{ (row.config.content) ? ( ( row.config.isContentTranslatable ) ? (row.config.content | translate) : row.config.content ) : ( (row.config.prefix) ? (row.config.prefix+row.data) : row.data ) }}</a>
+        <a (click)="stopPropagation($event)" [attr.href]="(cell.config.prefix) ? (cell.config.prefix+cell.data) : cell.data" [attr.title]="cell.config.title" [attr.target]="cell.config.target">{{ (cell.config.content) ? ( ( cell.config.isContentTranslatable ) ? (cell.config.content | translate) : cell.config.content ) : ( (cell.config.prefix) ? (cell.config.prefix+cell.data) : cell.data ) }}</a>
     </div>
 
     <div *ngSwitchCase="'function'">
-        <a class="functionClick" (click)="genericClickMethod($event, row.config.method, row.config.params, row.config.context)" >{{ row.data }}</a>
+        <a *ngIf="!cell.isTranslatable" class="functionClick" (click)="genericClickMethod($event, cell.config.method, cell.config.params, cell.config.context, cell.contextRow)" >{{ cell.data }}</a>
+        <a *ngIf="cell.isTranslatable" class="functionClick" (click)="genericClickMethod($event, cell.config.method, cell.config.params, cell.config.context, cell.contextRow)" >{{ cell.data | translate }}</a>
     </div>
 
     <div *ngSwitchDefault>
-        {{ (row.isTranslatable) ? (row.data | translate) : row.data }}
+        {{ (cell.isTranslatable) ? (cell.data | translate) : cell.data }}
     </div>
 
 </ng-container>

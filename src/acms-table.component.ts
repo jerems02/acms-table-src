@@ -4,7 +4,6 @@ import {
 } from '@angular/core';
 import {DomSanitizer} from "@angular/platform-browser";
 import {Item} from "./item.model";
-import {Row} from "./row.model";
 
 @Component({
   selector: 'acms-table',
@@ -23,7 +22,7 @@ export class AcmsTableComponent implements OnInit, OnChanges {
   @Output() emptyTableEvt: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   headers: any[];
-  targets: any[] = [];
+  configRow: any[] = [];
   results: any[] = [];
   filteredResults: any[] = [];
   displayedResults: any[] = [];
@@ -54,7 +53,7 @@ export class AcmsTableComponent implements OnInit, OnChanges {
 
   reinit() {
     this.headers = [];
-    this.targets = [];
+    this.configRow = [];
     this.results = [];
     this.filteredResults = [];
     this.displayedResults = [];
@@ -80,32 +79,32 @@ export class AcmsTableComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Find the value for prepare one row
+   * Find the value for prepare one cell
    */
-  prepareOneRow(target, el) {
-    let translatable = false;
+  prepareOneCell(cell, el) {
+    let translatable = cell.translatableRow;
     let objectFound;
 
     //find object
-    if (target.target !== null && !target.concat) { // if it is not a actions item
-      objectFound = this.findTargetThroughObject(target.target, el);
+    if (cell.target !== null && !cell.concat) { // if it is not a actions item
+      objectFound = this.findTargetThroughObject(cell.target, el);
       if(!objectFound) {
-        objectFound = target.messageIfEmpty;
-        if(target.isMessageIfEmptyTranslatable) translatable = true;
-        if(target.type === 'html') objectFound = this._sanitizer.sanitize(SecurityContext.HTML, objectFound);
-        if(target.type === 'img') objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
-        if(target.type === 'url') objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
-        if(target.type === 'svg') objectFound = this._sanitizer.bypassSecurityTrustHtml(objectFound);
+        objectFound = cell.messageIfEmpty;
+        if(cell.isMessageIfEmptyTranslatable) translatable = true;
+        if(cell.type === 'html') objectFound = this._sanitizer.sanitize(SecurityContext.HTML, objectFound);
+        if(cell.type === 'img') objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
+        if(cell.type === 'url') objectFound = this._sanitizer.sanitize(SecurityContext.URL, objectFound);
+        if(cell.type === 'svg') objectFound = this._sanitizer.bypassSecurityTrustHtml(objectFound);
       }
     };
 
-    if(!target.target && target.concat) {
+    if(!cell.target && cell.concat) {
       let tempValues = [];
-      target.concat.forEach( (concatItem) => {
+      cell.concat.forEach( (concatItem) => {
         let temp = this.findTargetThroughObject(concatItem, el);
         if(temp) tempValues.push(temp);
       });
-      objectFound = tempValues.join(target.concatSeparator);
+      objectFound = tempValues.join(cell.concatSeparator);
     }
 
     return {
@@ -114,7 +113,10 @@ export class AcmsTableComponent implements OnInit, OnChanges {
     }
   }
 
-
+  /**
+   * Prepare the header and the config for each column
+   * and populate the cell (td)
+   */
   prepareTable() {
 
     this.reinit();
@@ -131,12 +133,15 @@ export class AcmsTableComponent implements OnInit, OnChanges {
         isResponsive: el.hideWithResponsiveView,
         type: el.type,
         config: el.config,
-        classRow: el.classRow,
-        row: el.row,
+        classRow: el.classRow, // not classRow but classTd
+        translatableRow: el.translatableRow,
+        row: el.row, // if subrow
         messageIfEmpty: el.messageIfEmpty,
-        isMessageIfEmptyTranslatable: el.isMessageIfEmptyTranslatable
+        isMessageIfEmptyTranslatable: el.isMessageIfEmptyTranslatable,
+        is_sortable: el.is_sortable,
+        is_sortable_by: el.is_sortable_by
       }
-      this.targets.push(target);
+      this.configRow.push(target);
       //which column is searchable
       if(el.is_searchable) {
         this.colsSearchable.push(index);
@@ -145,59 +150,73 @@ export class AcmsTableComponent implements OnInit, OnChanges {
     });
 
 
-
     /**
-     * we loop on collection to extract data on json, we use the targets array installed before
+     * we loop on collection to extract data on json, we use the configRow array installed before
      * to know for each item the target and if the element is responsive
      */
-    this.collection.forEach( (el, index) => {
+    this.collection.forEach( (row, index) => {
 
-      var row: any = {};
-      row.items = [];
+      let tempRow: any = {}; // row formatted will be injected in results
+      let contextRow = row;
+      let dataSort: string; // property used to the sort the column of the table
+      tempRow.items = [];
 
-      row.id = this.findTargetThroughObject(this.config.global.target_id, el);
-      if(!row.id) row.id = index;
+      // get the id for row
+      tempRow.id = this.findTargetThroughObject(this.config.global.target_id, row);
+      if(!tempRow.id) tempRow.id = index;
 
-      this.targets.forEach( target => {
+      /**
+       * we loop on the config of Row for each cell for the future td
+       *
+       */
+      this.configRow.forEach(cell => {
 
-        let mainRow = this.prepareOneRow(target, el);
+        let cellData = this.prepareOneCell(cell, contextRow);
+        if(cell.is_sortable) dataSort = cellData.objectFound;
 
         // multirows
         let multirows = [];
         let that = this;
-        let recursiveRows = function (newTarget) {
 
-          let tempRow = that.prepareOneRow(newTarget, el);
-          if(!tempRow) return;
-          let row: Row = new Row(tempRow.objectFound);
-          row.isTranslatable = tempRow.translatable;
-          row.type = newTarget.type;
-          row.config = newTarget.config;
+        let recursiveRows = function (embeddedCell) {
+
+          let tempCellData = that.prepareOneCell(embeddedCell, contextRow);
+          if(!tempCellData) return;
+          let row: any = {};
+          row.data = tempCellData.objectFound;
+          // we check if a sub row is the target for the sort column
+          if(cell.is_sortable_by && embeddedCell.target === cell.is_sortable_by) dataSort = tempCellData.objectFound;
+
+          row.isTranslatable = tempCellData.translatable;
+          row.type = embeddedCell.type;
+          row.config = embeddedCell.config;
+          row.contextRow = contextRow;
+
           multirows.push(row);
           // recursive
-          if(newTarget.row) recursiveRows(newTarget.row);
+          if(embeddedCell.row) recursiveRows(embeddedCell.row);
 
         }
 
-        if(target.row) {
-          recursiveRows(target.row);
+        if(cell.row) {
+          recursiveRows(cell.row);
         }
 
-
-
-        let item: Item = new Item((mainRow.objectFound)?mainRow.objectFound:null);
-        item.actions = target.actions;
-        item.isResponsive = target.isResponsive;
-        item.type = target.type;
-        item.config = target.config;
-        item.classRow = target.classRow;
-        item.isTranslatable = mainRow.translatable;
+        let item: Item = new Item((cellData.objectFound)?cellData.objectFound:null);
+        item.dataSort = dataSort;
+        item.actions = cell.actions;
+        item.isResponsive = cell.isResponsive;
+        item.type = cell.type;
+        item.config = cell.config;
+        item.classRow = cell.classRow;
+        item.isTranslatable = cellData.translatable;
         item.multirows = multirows;
-        row.items.push(item);
+        item.contextRow = contextRow;
+        tempRow.items.push(item);
 
       });
 
-      this.results.push(row);
+      this.results.push(tempRow);
 
     })
 
@@ -299,8 +318,8 @@ export class AcmsTableComponent implements OnInit, OnChanges {
   sort(columnIndex, type) {
     let that = this;
     let compare = function(a, b) {
-      a = a.items[columnIndex].data;
-      b = b.items[columnIndex].data;
+      a = a.items[columnIndex].dataSort;
+      b = b.items[columnIndex].dataSort;
       if(!that.isNumeric(a)) {
         a.toLowerCase();
       }

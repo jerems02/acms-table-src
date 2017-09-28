@@ -9,7 +9,7 @@ import {Component, OnInit, OnChanges, Input} from "@angular/core";
 
 export class DataComponent implements OnInit, OnChanges {
 
-    @Input() row;
+    @Input() cell;
 
     constructor() {
     }
@@ -34,7 +34,7 @@ export class DataComponent implements OnInit, OnChanges {
      * @param method
      * @param params
      */
-    genericClickMethod(evt, method, params, context) {
+    genericClickMethod(evt, method, params, context, contextRow) {
 
         this.stopPropagation(evt);
         if(!params) {
@@ -42,6 +42,7 @@ export class DataComponent implements OnInit, OnChanges {
         }
         var newParams = params.slice();
         newParams.push(evt);
+        newParams.push(contextRow);
         if(context) {
             method.call(context, newParams);
         } else {
