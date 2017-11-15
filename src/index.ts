@@ -1,7 +1,7 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AcmsTableComponent } from './acms-table.component';
-import { TranslateModule } from "ng2-translate";
+import { TranslateModule } from "@ngx-translate/core";
 import { AcmsSwitchModule } from "acms-switch";
 import { DataComponent } from "./data/acms-data.component";
 

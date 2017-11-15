@@ -18,8 +18,8 @@
     "rxjs": "^5.1.0",
     "zone.js": "^0.8.4"
   },
-  "dependencies": {
+  "peerDependencies": {
     "acms-switch": "git+https://github.com/jerems02/acms-switch.git",
-    "ng2-translate": "^5.0.0"
+    "@ngx-translate/core": "^8.0.0"
   }
 }

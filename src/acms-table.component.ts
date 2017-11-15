@@ -133,6 +133,7 @@ export class AcmsTableComponent implements OnInit, OnChanges {
         isResponsive: el.hideWithResponsiveView,
         type: el.type,
         config: el.config,
+        key: (el.key)?el.key:index,
         classRow: el.classRow, // not classRow but classTd
         translatableRow: el.translatableRow,
         row: el.row, // if subrow
@@ -162,8 +163,12 @@ export class AcmsTableComponent implements OnInit, OnChanges {
       tempRow.items = [];
 
       // get the id for row
-      tempRow.id = this.findTargetThroughObject(this.config.global.target_id, row);
+      tempRow.id = this.findTargetThroughObject( (this.config.global.target_id) ? this.config.global.target_id : '', row);
       if(!tempRow.id) tempRow.id = index;
+
+      //get the class for the row (line)
+      tempRow.classLine = this.findTargetThroughObject( (this.config.global.target_classLine) ? this.config.global.target_classLine : '', row);
+
 
       /**
        * we loop on the config of Row for each cell for the future td
@@ -212,6 +217,9 @@ export class AcmsTableComponent implements OnInit, OnChanges {
         item.isTranslatable = cellData.translatable;
         item.multirows = multirows;
         item.contextRow = contextRow;
+        item.styleCell = contextRow.styleCell || null;
+        item.target = cell.target;
+        item.key = cell.key;
         tempRow.items.push(item);
 
       });

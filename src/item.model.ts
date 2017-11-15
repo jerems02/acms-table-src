@@ -12,6 +12,9 @@ export class Item {
     translatableRow: boolean = false;
     multirows: any[] = [];
     contextRow: any;
+    target: string;
+    key: any;
+    styleCell: any;
 
     constructor(data) {
         this.data = data;

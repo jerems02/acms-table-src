@@ -33,7 +33,7 @@
     </thead>
 
     <tbody>
-    <tr *ngFor="let result of displayedResults" (click)="(config.global.isEventOnRow) ? sendEvent($event,'onRow', result.id) : ''">
+    <tr *ngFor="let result of displayedResults" (click)="(config.global.isEventOnRow) ? sendEvent($event,'onRow', result.id) : ''" [ngClass]="result.classLine">
         <ng-template ngFor let-item [ngForOf]="result.items">
 
             <td *ngIf="item.actions && item.actions.length > 0">
@@ -47,7 +47,7 @@
             </td>
 
 
-            <td *ngIf="!item.actions && showColumn(item.isResponsive)" [ngClass]="item.classRow">
+            <td *ngIf="!item.actions && showColumn(item.isResponsive)" [ngClass]="(item.styleCell && item.styleCell[item.key] && item.styleCell[item.key].isApplied)?(item.styleCell[item.key].className):item.classRow">
 
                 <acms-data [cell]="item"></acms-data>
 
